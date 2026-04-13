@@ -18,7 +18,7 @@ def extract_dc_subgraph(save_path="../data/dc_subgraph.graphml"):
     # Fetch drivable road network
     # We use bidirectional=False inherently when pulling drive networks,
     # but OSMnx creates a MultiDiGraph to preserve one-way streets.
-    G = ox.graph_from_point(point, dist=1500, network_type="drive", simplify=True)
+    G = ox.graph_from_point(point, dist=3000, network_type="drive", simplify=True)
     
     # Get basic stats
     print(f"Network extracted. Nodes: {len(G.nodes)}, Edges: {len(G.edges)}")
@@ -33,9 +33,11 @@ def extract_dc_subgraph(save_path="../data/dc_subgraph.graphml"):
         import geopandas as gpd
         center = Point(point[1], point[0])
         # Project to local CRS to measure distance in meters
-        nodes_proj = ox.project_gdf(nodes)
+        #nodes_proj = ox.project_gdf(nodes)
+        nodes_proj = ox.projection.project_gdf(nodes)
         center_gdf = gpd.GeoDataFrame(geometry=[center], crs=nodes.crs)
-        center_proj = ox.project_gdf(center_gdf).geometry.iloc[0]
+        #center_proj = ox.project_gdf(center_gdf).geometry.iloc[0]
+        center_proj = ox.projection.project_gdf(center_gdf).geometry.iloc[0]
         
         nodes_proj['dist_to_center'] = nodes_proj.geometry.distance(center_proj)
         # Keep the 1000 closest nodes
@@ -46,7 +48,8 @@ def extract_dc_subgraph(save_path="../data/dc_subgraph.graphml"):
         print(f"Pruned network. Nodes: {len(G.nodes)}, Edges: {len(G.edges)}")
         
         # Clean up isolated nodes or small components after pruning
-        G = ox.utils_graph.get_largest_component(G, strongly=True)
+        #G = ox.utils_graph.get_largest_component(G, strongly=True)
+        G = ox.truncate.largest_component(G, strongly=True)
         print(f"Largest strongly connected component. Nodes: {len(G.nodes)}, Edges: {len(G.edges)}")
     
     # Ensure directory exists
