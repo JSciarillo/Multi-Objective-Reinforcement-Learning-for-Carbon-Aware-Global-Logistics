@@ -1,0 +1,11 @@
+osmnx
+networkx
+geopandas
+rasterio
+matplotlib
+scipy
+pandas
+requests
+boto3
+jupyter
+jupyterlab
