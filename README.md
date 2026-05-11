@@ -35,8 +35,6 @@ A routing engine for freight logistics that jointly optimises **delivery time** 
 ```
 .
 ├── README.md
-├── REPORT_2.md                          <- full project report (all results)
-├── SPECIFICATIONS.md                    <- detailed architecture doc
 ├── requirements.txt
 │
 ├── src/                                 <- Phase 1 data pipeline + Phase 2 PPO
