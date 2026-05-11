@@ -9,3 +9,6 @@ requests
 boto3
 jupyter
 jupyterlab
+torch
+gymnasium
+numpy
