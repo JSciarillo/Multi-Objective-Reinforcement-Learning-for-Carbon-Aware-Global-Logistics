@@ -18,8 +18,8 @@ import torch.optim as optim
 
 
 # ---------------- Config ----------------
-HERE        = os.path.dirname(os.path.abspath(__file__))
-GRAPH_PATH  = os.path.join(HERE, "data", "dc_subgraph_carbon.graphml")
+ROOT       = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+GRAPH_PATH = os.path.join(ROOT, "data", "dc_subgraph_carbon.graphml")
 MODELS_DIR  = os.path.join(HERE, "models")
 RESULTS_DIR = os.path.join(HERE, "results")
 MODEL_PATH  = os.path.join(MODELS_DIR, "dqn_carbon.pt")
@@ -30,7 +30,6 @@ VEHICLE      = "HeavyTruck"
 TIME_PROFILE = "evening_rush"
 MAX_DEG      = 8        # max neighbors considered per node (= action space size)
 SEED         = 0
-
 
 # ---------------- Graph load ----------------
 def load_simple_graph(path=GRAPH_PATH, vehicle=VEHICLE, time_profile=TIME_PROFILE):
