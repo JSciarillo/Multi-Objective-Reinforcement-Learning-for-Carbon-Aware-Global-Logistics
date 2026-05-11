@@ -1,0 +1,14 @@
+osmnx
+networkx
+geopandas
+rasterio
+matplotlib
+scipy
+pandas
+requests
+boto3
+jupyter
+jupyterlab
+torch
+stable-baselines3
+sb3-contrib
