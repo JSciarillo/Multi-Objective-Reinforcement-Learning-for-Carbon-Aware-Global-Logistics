@@ -20,8 +20,8 @@ import torch.optim as optim
 # ---------------- Config ----------------
 ROOT       = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GRAPH_PATH = os.path.join(ROOT, "data", "dc_subgraph_carbon.graphml")
-MODELS_DIR  = os.path.join(HERE, "models")
-RESULTS_DIR = os.path.join(HERE, "results")
+MODELS_DIR  = os.path.join(ROOT, "models")
+RESULTS_DIR = os.path.join(ROOT, "results")
 MODEL_PATH  = os.path.join(MODELS_DIR, "dqn_carbon.pt")
 PARETO_PNG  = os.path.join(RESULTS_DIR, "pareto_frontier.png")
 SUMMARY_CSV = os.path.join(RESULTS_DIR, "summary.csv")
