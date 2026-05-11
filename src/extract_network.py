@@ -1,65 +1,54 @@
 import osmnx as ox
 import networkx as nx
 import os
+from shapely.geometry import Point
+import geopandas as gpd
 
 ox.settings.cache_folder = "../cache"
-ox.settings.use_cache = True # Ensures caching is enabled
+ox.settings.use_cache = True
 
-"""
-    Extracts a 1,000-node representative subgraph of Downtown Washington D.C.
-    Uses OSMnx to fetch the drive network, simplifies the topology, and saves it.
-"""
-def extract_dc_subgraph(save_path="../data/dc_subgraph.graphml"):
+# Default DC params (used by the original pipeline)
+DC_CENTER     = (38.8977, -77.0365)
+DC_TARGET     = 2000
+DC_RADIUS_M   = 5000
 
-    # Define a point in downtown D.C. (near the White House/downtown area)
-    point = (38.8977, -77.0365)
 
-    print("Fetching D.C. drivable network...")
-    # Fetch drivable road network
-    # We use bidirectional=False inherently when pulling drive networks,
-    # but OSMnx creates a MultiDiGraph to preserve one-way streets.
-    G = ox.graph_from_point(point, dist=3000, network_type="drive", simplify=True)
-    
-    # Get basic stats
-    print(f"Network extracted. Nodes: {len(G.nodes)}, Edges: {len(G.edges)}")
-    
+def extract_subgraph(center, save_path, target_nodes=2000, radius_m=5000, city_name="subgraph"):
+    """Generic OSM subgraph extractor used by both DC and the terrain study."""
+    print(f"Fetching {city_name} drivable network (radius={radius_m}m)...")
+    G = ox.graph_from_point(center, dist=radius_m, network_type="drive", simplify=True)
+    print(f"Raw network: {len(G.nodes)} nodes, {len(G.edges)} edges")
 
-    if len(G.nodes) > 1200:
-        print("Pruning to approximately 1,000 nodes...")
-        # Sort nodes by distance from the center point
-        nodes = ox.graph_to_gdfs(G, edges=False)
-        # Point geometry
-        from shapely.geometry import Point
-        import geopandas as gpd
-        center = Point(point[1], point[0])
-        # Project to local CRS to measure distance in meters
-        #nodes_proj = ox.project_gdf(nodes)
-        nodes_proj = ox.projection.project_gdf(nodes)
-        center_gdf = gpd.GeoDataFrame(geometry=[center], crs=nodes.crs)
-        #center_proj = ox.project_gdf(center_gdf).geometry.iloc[0]
+    if len(G.nodes) > target_nodes + 200:
+        print(f"Pruning to {target_nodes} nodes closest to center...")
+        nodes_gdf = ox.graph_to_gdfs(G, edges=False)
+        center_gdf = gpd.GeoDataFrame(geometry=[Point(center[1], center[0])], crs=nodes_gdf.crs)
+        nodes_proj  = ox.projection.project_gdf(nodes_gdf)
         center_proj = ox.projection.project_gdf(center_gdf).geometry.iloc[0]
-        
-        nodes_proj['dist_to_center'] = nodes_proj.geometry.distance(center_proj)
-        # Keep the 1000 closest nodes
-        closest_1000 = nodes_proj.sort_values('dist_to_center').head(1000)
-        
-        # Induce subgraph
-        G = G.subgraph(closest_1000.index).copy()
-        print(f"Pruned network. Nodes: {len(G.nodes)}, Edges: {len(G.edges)}")
-        
-        # Clean up isolated nodes or small components after pruning
-        #G = ox.utils_graph.get_largest_component(G, strongly=True)
-        G = ox.truncate.largest_component(G, strongly=True)
-        print(f"Largest strongly connected component. Nodes: {len(G.nodes)}, Edges: {len(G.edges)}")
-    
-    # Ensure directory exists
+        nodes_proj["dist"] = nodes_proj.geometry.distance(center_proj)
+        keep = nodes_proj.sort_values("dist").head(target_nodes).index
+        G = G.subgraph(keep).copy()
+        print(f"After pruning: {len(G.nodes)} nodes, {len(G.edges)} edges")
+
+    G = ox.truncate.largest_component(G, strongly=True)
+    print(f"Largest strongly connected component: {len(G.nodes)} nodes, {len(G.edges)} edges")
+
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    
-    # Save the graph
-    print(f"Saving graph to {save_path}...")
     ox.save_graphml(G, save_path)
-    print("Done.")
+    print(f"Saved to {save_path}")
     return G
+
+
+def extract_dc_subgraph(save_path="../data/dc_subgraph.graphml"):
+    """Wrapper retained for backward-compat with the original pipeline."""
+    return extract_subgraph(
+        center=DC_CENTER,
+        save_path=save_path,
+        target_nodes=DC_TARGET,
+        radius_m=DC_RADIUS_M,
+        city_name="DC",
+    )
+
 
 if __name__ == "__main__":
     extract_dc_subgraph()
