@@ -1,6 +1,6 @@
 # Multi-Objective RL for Carbon-Aware Global Logistics
 
-**CSCI-6364 S26 — Machine Learning**
+**CSCI-6364 S26 - Machine Learning**
 **Team:** Alekya Kowta · Kushi Khandoji · Kritika Berry · Jasmine Sciarillo
 
 A routing engine for freight logistics that jointly optimises **delivery time** and **CO₂ emissions** on a real Washington DC road network. The graph is enriched with MOVES5 emission factors, SRTM elevation grades, and 4 time-of-day congestion profiles. Three algorithms are compared across an α ∈ [0,1] preference sweep (α=1 = time only, α=0 = carbon only).
@@ -9,18 +9,18 @@ A routing engine for freight logistics that jointly optimises **delivery time** 
 
 ## Results Summary
 
-### Weighted A* — exact optimal (Phase 3)
+### Weighted A* - exact optimal (Phase 3)
 - **100% routing success** on all 20 evaluation pairs
-- At α=0.3 (sweet spot): **−3.1% carbon** for only **+1.7% travel time** vs fastest route
+- At α=0.3 (sweet spot): **-3.1% carbon** for only **+1.7% travel time** vs fastest route
 - Produces a smooth, provably optimal Pareto curve
 
-### PPO + Behavioral Cloning — policy-based RL (Phase 2)
+### PPO + Behavioral Cloning - policy-based RL (Phase 2)
 - 5 policies trained, each with its own Pareto-weighted Dijkstra expert
 - Greenest policy achieves **0.946 carbon optimality** (94.6% of theoretical best)
 - Pareto ordering correct: greenest = lowest carbon, time-biased = fastest
 
-### Preference-conditioned DQN — value-based RL (Phase 3)
-- Single network conditioned on α — handles all preferences without retraining
+### Preference-conditioned DQN - value-based RL (Phase 3)
+- Single network conditioned on α - handles all preferences without retraining
 - 2–15% routing success after 120,000 training steps (needs more training)
 - Action-as-input architecture fixes the generalisation problem of fixed-head DQN
 
@@ -93,7 +93,7 @@ pip install -r requirements.txt
 
 ---
 
-## Phase 1 — Build the Data Pipeline
+## Phase 1 - Build the Data Pipeline
 
 Converts OpenStreetMap road data into a routing graph with per-edge CO₂ weights.
 **Skip this if you already have `data/dc_subgraph_carbon.graphml`** (it's included in the repo).
@@ -114,11 +114,11 @@ What it builds:
 
 ---
 
-## Phase 2 — PPO + Behavioral Cloning
+## Phase 2 - PPO + Behavioral Cloning
 
 Five MaskablePPO policies, each trained on a Dijkstra expert matched to its (α, β) preference.
 
-### Step 1 — Train BC policies
+### Step 1 - Train BC policies
 
 ```bash
 cd src
@@ -138,7 +138,7 @@ What it trains:
 
 Saves: `models/ppo_*_bc.zip`
 
-### Step 2 — Evaluate PPO policies
+### Step 2 - Evaluate PPO policies
 
 ```bash
 cd src
@@ -146,9 +146,9 @@ python3 evaluate.py --no-cycle-break --max-detour 2.5
 ```
 
 Outputs:
-- `results/pareto_frontier_ppo.png` — 5-policy Pareto frontier
-- `results/policy_metrics_ppo.png` — carbon optimality bar chart
-- `results/evaluation_metrics_ppo.csv` — per-trip data
+- `results/pareto_frontier_ppo.png` - 5-policy Pareto frontier
+- `results/policy_metrics_ppo.png` - carbon optimality bar chart
+- `results/evaluation_metrics_ppo.csv` - per-trip data
 
 Expected results (50 trips, full DC graph, honest evaluation):
 
@@ -162,14 +162,14 @@ Expected results (50 trips, full DC graph, honest evaluation):
 
 Dijkstra baselines on same trips: Fastest = 469s/1885g · Greenest = 477s/1853g
 
-### Step 3 — (Optional) PPO fine-tuning
+### Step 3 - (Optional) PPO fine-tuning
 
 ```bash
 cd src
 python3 train_ppo.py --use-bc --phase1 100000 --phase2 200000 --phase3 300000
 ```
 
-### Step 4 — (Optional) Terrain study: DC vs San Francisco
+### Step 4 - (Optional) Terrain study: DC vs San Francisco
 
 ```bash
 cd src
@@ -178,13 +178,13 @@ python3 terrain_study.py        # builds SF graph from scratch, ~5 min
 
 Output: `results/terrain_comparison.png`
 
-Result: SF (hilly) has **3.97%** mean carbon savings vs DC's **2.14%** — 85% more benefit.
+Result: SF (hilly) has **3.97%** mean carbon savings vs DC's **2.14%** - 85% more benefit.
 
 ---
 
-## Phase 3 — Weighted A* + Preference DQN (baseline comparison)
+## Phase 3 - Weighted A* + Preference DQN (baseline comparison)
 
-### Option A — Weighted A* only (no training needed, ~10 sec)
+### Option A - Weighted A* only (no training needed, ~10 sec)
 
 The exact optimal Pareto solver. Use this to see the true achievable tradeoff.
 
@@ -203,22 +203,22 @@ Expected results (20 OD pairs, 4–16 hops, 100% success):
 | 0.50 | 230.7 s | 917.1 g | +1.0% | −2.6% |
 | 1.00 | 228.6 s | 941.9 g | 0.0% | 0.0% |
 
-### Option B — Train the preference-conditioned DQN (~30–60 min)
+### Option B - Train the preference-conditioned DQN (~30–60 min)
 
 ```bash
 python3 baseline/single_file_morl.py train --steps 120000
 # Saves: models/dqn_carbon.pt
 ```
 
-### Option C — Compare all: A* + DQN + Dijkstra
+### Option C - Compare all: A* + DQN + Dijkstra
 
 ```bash
 python3 baseline/single_file_morl.py compare --pairs 20
 ```
 
-DQN results after 120k steps: 2–15% success rate. On matched trips, DQN routes are 2–35% worse than A* — more training needed.
+DQN results after 120k steps: 2–15% success rate. On matched trips, DQN routes are 2–35% worse than A* - more training needed.
 
-### Option D — Weighted Dijkstra per-trip scatter
+### Option D - Weighted Dijkstra per-trip scatter
 
 ```bash
 python3 baseline/weighted_dijkstra.py
@@ -239,7 +239,7 @@ python3 baseline/weighted_dijkstra.py
 | Eval pairs used | 20 (4–16 hops) | 50 (full graph) | 20 (4–16 hops) |
 
 **Why both A* and RL?**
-A* is the oracle — it always finds the optimal route but requires the full graph structure at query time. RL agents learn a routing policy that can potentially generalise to new graphs, new cities, or new preferences without re-running search. A* tells us what's possible; RL tries to learn it.
+A* is the oracle - it always finds the optimal route but requires the full graph structure at query time. RL agents learn a routing policy that can potentially generalise to new graphs, new cities, or new preferences without re-running search. A* tells us what's possible; RL tries to learn it.
 
 ---
 
@@ -247,8 +247,8 @@ A* is the oracle — it always finds the optimal route but requires the full gra
 
 | File | Shows | Use in report |
 |---|---|---|
-| `data/carbon_heatmap.png` | DC road network — brighter = higher CO₂ edge | Methodology section |
-| `results/pareto_frontier_astar_dqn.png` | **A* smooth Pareto curve + DQN points** | Phase 3 results — show first |
+| `data/carbon_heatmap.png` | DC road network - brighter = higher CO₂ edge | Methodology section |
+| `results/pareto_frontier_astar_dqn.png` | **A* smooth Pareto curve + DQN points** | Phase 3 results - show first |
 | `results/pareto_front_dijkstra.png` | Per-trip Dijkstra scatter (colour = α preference) | Phase 3 supplement |
 | `results/pareto_frontier_ppo.png` | **PPO 5-policy Pareto frontier** | Phase 2 results |
 | `results/policy_metrics_ppo.png` | Carbon optimality 0.894–0.946 bar chart | Phase 2 results |
