@@ -267,7 +267,7 @@ A* is the oracle - it always finds the optimal route but requires the full graph
 **DQN shows 0/N success**
 → Needs more training. Run: `python3 baseline/single_file_morl.py train --steps 400000`
 
-**Elevation API slow / timeout**
+**Elevation API slow/timeout**
 → OpenTopoData is rate-limited (100 nodes/request, 1 req/sec). The pipeline retries automatically. Takes ~1 min for 960 nodes.
 
 **`embeddings_*.npy` not found**
